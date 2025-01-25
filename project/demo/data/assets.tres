@@ -25,9 +25,10 @@ generated_type = 1
 name = "TestMultimesh"
 id = 1
 maximum_lod = 3
-lod_1_distance_begin = 10.0
-lod_2_distance_begin = 20.0
-lod_3_distance_begin = 30.0
+lod_0_visibility_range = 10.0
+lod_1_visibility_range = 20.0
+lod_2_visibility_range = 30.0
+lod_3_visibility_range = 40.0
 scene_file = ExtResource("1_07hwj")
 
 [sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_mup2f"]

@@ -143,6 +143,9 @@ Ref<Material> Terrain3DMeshAsset::_get_material() {
 Terrain3DMeshAsset::Terrain3DMeshAsset() {
 	_name = "New Mesh";
 	_id = 0;
+
+	_lod_visibility_ranges.resize(4); // TODO: define this as const.
+	_lod_visibility_ranges.fill(0.f);
 }
 
 void Terrain3DMeshAsset::clear() {
@@ -154,10 +157,9 @@ void Terrain3DMeshAsset::clear() {
 	_cast_shadows = GeometryInstance3D::SHADOW_CASTING_SETTING_ON;
 	_maximum_lod = 0;
 	_shadow_lod = 0;
-	_lod_0_distance_begin = 0.f;
-	_lod_1_distance_begin = 0.f;
-	_lod_2_distance_begin = 0.f;
-	_lod_3_distance_begin = 0.f;
+
+	_lod_visibility_ranges.resize(4); // TODO: define this as const.
+	_lod_visibility_ranges.fill(0.f);
 
 	_generated_faces = 2.f;
 	_generated_size = Vector2(1.f, 1.f);
@@ -211,7 +213,7 @@ void Terrain3DMeshAsset::set_cast_shadows(const GeometryInstance3D::ShadowCastin
 }
 
 void Terrain3DMeshAsset::set_maximum_lod(const int p_lod) {
-	_maximum_lod = CLAMP(p_lod, 0, get_mesh_count() - 1);
+	_maximum_lod = CLAMP(p_lod, 0, MIN(3, get_mesh_count() - 1)); // TODO: use const
 	LOG(INFO, "Setting maximum LOD: ", _maximum_lod);
 	emit_signal("instancer_setting_changed");
 }
@@ -222,53 +224,49 @@ void Terrain3DMeshAsset::set_shadow_lod(const int p_lod) {
 	emit_signal("instancer_setting_changed");
 }
 
-void Terrain3DMeshAsset::set_lod_0_distance_begin(const real_t p_distance) {
-	// TODO: validate distances make sense with each other
-	_lod_0_distance_begin = CLAMP(p_distance, 0.f, 100000.f);
-	LOG(INFO, "Setting LOD 0 distance begin: ", _lod_0_distance_begin);
+void Terrain3DMeshAsset::set_lod_visibility_range(const int p_lod, const real_t p_distance) {
+	// TODO: validate distances make sense with each other?
+	_lod_visibility_ranges[p_lod] = CLAMP(p_distance, 0.f, 100000.f);
+	LOG(INFO, "Setting LOD ", p_lod, " visibility range: ", _lod_visibility_ranges[p_lod]);
 	emit_signal("instancer_setting_changed");
 }
 
-void Terrain3DMeshAsset::set_lod_1_distance_begin(const real_t p_distance) {
-	_lod_1_distance_begin = CLAMP(p_distance, 0.f, 100000.f);
-	LOG(INFO, "Setting LOD 1 distance begin: ", _lod_1_distance_begin);
-	emit_signal("instancer_setting_changed");
+void Terrain3DMeshAsset::set_lod_0_visibility_range(const real_t p_distance) {
+	set_lod_visibility_range(0, p_distance);
 }
 
-void Terrain3DMeshAsset::set_lod_2_distance_begin(const real_t p_distance) {
-	_lod_2_distance_begin = CLAMP(p_distance, 0.f, 100000.f);
-	LOG(INFO, "Setting LOD 2 distance begin: ", _lod_2_distance_begin);
-	emit_signal("instancer_setting_changed");
+void Terrain3DMeshAsset::set_lod_1_visibility_range(const real_t p_distance) {
+	set_lod_visibility_range(1, p_distance);
 }
 
-void Terrain3DMeshAsset::set_lod_3_distance_begin(const real_t p_distance) {
-	_lod_3_distance_begin = CLAMP(p_distance, 0.f, 100000.f);
-	LOG(INFO, "Setting LOD 3 distance begin: ", _lod_3_distance_begin);
-	emit_signal("instancer_setting_changed");
+void Terrain3DMeshAsset::set_lod_2_visibility_range(const real_t p_distance) {
+	set_lod_visibility_range(2, p_distance);
 }
 
-real_t Terrain3DMeshAsset::get_lod_distance_begin(const int p_lod) const {
-	switch (p_lod) {
-		case 0:
-			return _lod_0_distance_begin;
-		case 1:
-			return _lod_1_distance_begin;
-		case 2:
-			return _lod_2_distance_begin;
-		case 3:
-			return _lod_3_distance_begin;
-		default:
-			return 0.f;
-	}
+void Terrain3DMeshAsset::set_lod_3_visibility_range(const real_t p_distance) {
+	set_lod_visibility_range(3, p_distance);
 }
 
-real_t Terrain3DMeshAsset::get_lod_distance_end(const int p_lod) const {
-	// next is p_lod + 1, if it's greater than maximum lod, returns -1
-	if (p_lod < 0 || p_lod >= get_maximum_lod()) {
+real_t Terrain3DMeshAsset::get_lod_visibility_range_begin(const int p_lod) const {
+	if (p_lod < 0 || p_lod > get_maximum_lod()) { // TODO: use const
+		LOG(ERROR, "Invalid LOD: ", p_lod);
 		return -1.f;
 	}
 
-	return get_lod_distance_begin(p_lod + 1);
+	if (p_lod == 0) {
+		return 0.f;
+	}
+
+	return _lod_visibility_ranges[p_lod - 1];
+}
+
+real_t Terrain3DMeshAsset::get_lod_visibility_range_end(const int p_lod) const {
+	// next is p_lod + 1, if it's greater than maximum lod, returns -1
+	if (p_lod < 0 || p_lod > get_maximum_lod()) {
+		return -1.f;
+	}
+
+	return _lod_visibility_ranges[p_lod];
 }
 
 void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
@@ -308,6 +306,10 @@ void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
 				mesh->surface_set_material(j, mat);
 			}
 			_meshes.push_back(mesh);
+
+			if (_meshes.size() == 4) { // TODO: make this a constant
+				break;
+			}
 		}
 		if (_meshes.size() > 0) {
 			Ref<Mesh> mesh = _meshes[0];
@@ -420,14 +422,14 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maximum_lod"), &Terrain3DMeshAsset::get_maximum_lod);
 	ClassDB::bind_method(D_METHOD("set_shadow_lod", "lod"), &Terrain3DMeshAsset::set_shadow_lod);
 	ClassDB::bind_method(D_METHOD("get_shadow_lod"), &Terrain3DMeshAsset::get_shadow_lod);
-	ClassDB::bind_method(D_METHOD("set_lod_0_distance_begin", "distance"), &Terrain3DMeshAsset::set_lod_0_distance_begin);
-	ClassDB::bind_method(D_METHOD("get_lod_0_distance_begin"), &Terrain3DMeshAsset::get_lod_0_distance_begin);
-	ClassDB::bind_method(D_METHOD("set_lod_1_distance_begin", "distance"), &Terrain3DMeshAsset::set_lod_1_distance_begin);
-	ClassDB::bind_method(D_METHOD("get_lod_1_distance_begin"), &Terrain3DMeshAsset::get_lod_1_distance_begin);
-	ClassDB::bind_method(D_METHOD("set_lod_2_distance_begin", "distance"), &Terrain3DMeshAsset::set_lod_2_distance_begin);
-	ClassDB::bind_method(D_METHOD("get_lod_2_distance_begin"), &Terrain3DMeshAsset::get_lod_2_distance_begin);
-	ClassDB::bind_method(D_METHOD("set_lod_3_distance_begin", "distance"), &Terrain3DMeshAsset::set_lod_3_distance_begin);
-	ClassDB::bind_method(D_METHOD("get_lod_3_distance_begin"), &Terrain3DMeshAsset::get_lod_3_distance_begin);
+	ClassDB::bind_method(D_METHOD("set_lod_0_visibility_range", "distance"), &Terrain3DMeshAsset::set_lod_0_visibility_range);
+	ClassDB::bind_method(D_METHOD("get_lod_0_visibility_range"), &Terrain3DMeshAsset::get_lod_0_visibility_range);
+	ClassDB::bind_method(D_METHOD("set_lod_1_visibility_range", "distance"), &Terrain3DMeshAsset::set_lod_1_visibility_range);
+	ClassDB::bind_method(D_METHOD("get_lod_1_visibility_range"), &Terrain3DMeshAsset::get_lod_1_visibility_range);
+	ClassDB::bind_method(D_METHOD("set_lod_2_visibility_range", "distance"), &Terrain3DMeshAsset::set_lod_2_visibility_range);
+	ClassDB::bind_method(D_METHOD("get_lod_2_visibility_range"), &Terrain3DMeshAsset::get_lod_2_visibility_range);
+	ClassDB::bind_method(D_METHOD("set_lod_3_visibility_range", "distance"), &Terrain3DMeshAsset::set_lod_3_visibility_range);
+	ClassDB::bind_method(D_METHOD("get_lod_3_visibility_range"), &Terrain3DMeshAsset::get_lod_3_visibility_range);
 	ClassDB::bind_method(D_METHOD("set_scene_file", "scene_file"), &Terrain3DMeshAsset::set_scene_file);
 	ClassDB::bind_method(D_METHOD("get_scene_file"), &Terrain3DMeshAsset::get_scene_file);
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &Terrain3DMeshAsset::set_material_override);
@@ -452,10 +454,10 @@ void Terrain3DMeshAsset::_bind_methods() {
 	// TODO: add readonly mesh count?
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "maximum_lod", PROPERTY_HINT_NONE), "set_maximum_lod", "get_maximum_lod");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_lod", PROPERTY_HINT_NONE), "set_shadow_lod", "get_shadow_lod");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_0_distance_begin", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_0_distance_begin", "get_lod_0_distance_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_1_distance_begin", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_1_distance_begin", "get_lod_1_distance_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_2_distance_begin", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_2_distance_begin", "get_lod_2_distance_begin");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_3_distance_begin", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_3_distance_begin", "get_lod_3_distance_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_0_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_0_visibility_range", "get_lod_0_visibility_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_1_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_1_visibility_range", "get_lod_1_visibility_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_2_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_2_visibility_range", "get_lod_2_visibility_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_3_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_3_visibility_range", "get_lod_3_visibility_range");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "scene_file", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"), "set_scene_file", "get_scene_file");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generated_type", PROPERTY_HINT_ENUM, "None,Texture Card"), "set_generated_type", "get_generated_type");

@@ -29,7 +29,7 @@ public:
 private:
 	// Saved data
 	real_t _height_offset = 0.f;
-	real_t _visibility_range = 100.f;
+	real_t _visibility_range = 100.f; // TODO: drop and discuss storage migration
 	real_t _visibility_margin = 0.f;
 	GeometryInstance3D::ShadowCastingSetting _cast_shadows = GeometryInstance3D::SHADOW_CASTING_SETTING_ON;
 	GenType _generated_type = TYPE_NONE;
@@ -41,10 +41,7 @@ private:
 	int _maximum_lod = 0;
 	int _shadow_lod = 0;
 
-	float _lod_0_distance_begin = 0.f;
-	float _lod_1_distance_begin = 0.f;
-	float _lod_2_distance_begin = 0.f;
-	float _lod_3_distance_begin = 0.f;
+	PackedFloat32Array _lod_visibility_ranges;
 
 	// Working data
 	TypedArray<Mesh> _meshes;
@@ -84,17 +81,19 @@ public:
 	void set_shadow_lod(const int p_lod);
 	int get_shadow_lod() const { return _shadow_lod; }
 
-	void set_lod_0_distance_begin(const real_t p_distance);
-	real_t get_lod_0_distance_begin() const { return _lod_0_distance_begin; }
-	void set_lod_1_distance_begin(const real_t p_distance);
-	real_t get_lod_1_distance_begin() const { return _lod_1_distance_begin; }
-	void set_lod_2_distance_begin(const real_t p_distance);
-	real_t get_lod_2_distance_begin() const { return _lod_2_distance_begin; }
-	void set_lod_3_distance_begin(const real_t p_distance);
-	real_t get_lod_3_distance_begin() const { return _lod_3_distance_begin; }
+	void set_lod_visibility_range(const int p_lod, const real_t p_distance);
 
-	real_t get_lod_distance_begin(const int p_lod) const;
-	real_t get_lod_distance_end(const int p_lod) const;
+	void set_lod_0_visibility_range(const real_t p_distance);
+	real_t get_lod_0_visibility_range() const { return _lod_visibility_ranges[0]; }
+	void set_lod_1_visibility_range(const real_t p_distance);
+	real_t get_lod_1_visibility_range() const { return _lod_visibility_ranges[1]; }
+	void set_lod_2_visibility_range(const real_t p_distance);
+	real_t get_lod_2_visibility_range() const { return _lod_visibility_ranges[2]; }
+	void set_lod_3_visibility_range(const real_t p_distance);
+	real_t get_lod_3_visibility_range() const { return _lod_visibility_ranges[3]; }
+
+	real_t get_lod_visibility_range_begin(const int p_lod) const;
+	real_t get_lod_visibility_range_end(const int p_lod) const;
 
 	void set_scene_file(const Ref<PackedScene> &p_scene_file);
 	Ref<PackedScene> get_scene_file() const { return _packed_scene; }

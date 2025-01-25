@@ -108,10 +108,11 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 						String cstring = "_C" + Util::location_to_string(cell).trim_prefix("_");
 						mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
 						mmi->set_as_top_level(true);
-						mmi->set_visibility_range_begin(ma->get_lod_distance_begin(lod));
+						mmi->set_visibility_range_begin(ma->get_lod_visibility_range_begin(lod));
 
-						real_t lod_end = ma->get_lod_distance_end(lod);
-						if (lod_end > 0.0f) {
+
+						real_t lod_end = ma->get_lod_visibility_range_end(lod);
+						if (lod_end >= 0.0f) {
 							mmi->set_visibility_range_end(lod_end);
 						}
 
