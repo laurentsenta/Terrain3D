@@ -144,7 +144,7 @@ Terrain3DMeshAsset::Terrain3DMeshAsset() {
 	_name = "New Mesh";
 	_id = 0;
 
-	_lod_visibility_ranges.resize(4); // TODO: define this as const.
+	_lod_visibility_ranges.resize(MAX_LOD_COUNT);
 	_lod_visibility_ranges.fill(0.f);
 }
 
@@ -158,7 +158,7 @@ void Terrain3DMeshAsset::clear() {
 	_maximum_lod = 0;
 	_shadow_lod = 0;
 
-	_lod_visibility_ranges.resize(4); // TODO: define this as const.
+	_lod_visibility_ranges.resize(MAX_LOD_COUNT);
 	_lod_visibility_ranges.fill(0.f);
 
 	_generated_faces = 2.f;
@@ -213,7 +213,7 @@ void Terrain3DMeshAsset::set_cast_shadows(const GeometryInstance3D::ShadowCastin
 }
 
 void Terrain3DMeshAsset::set_maximum_lod(const int p_lod) {
-	_maximum_lod = CLAMP(p_lod, 0, MIN(3, get_mesh_count() - 1)); // TODO: use const, 3 is max lod - 1
+	_maximum_lod = CLAMP(p_lod, 0, MIN(MAX_LOD_COUNT - 1, get_mesh_count() - 1));
 	LOG(INFO, "Setting maximum LOD: ", _maximum_lod);
 	emit_signal("instancer_setting_changed");
 }
@@ -307,7 +307,7 @@ void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
 			}
 			_meshes.push_back(mesh);
 
-			if (_meshes.size() == 4) { // TODO: make this a constant
+			if (_meshes.size() == MAX_LOD_COUNT) {
 				break;
 			}
 		}

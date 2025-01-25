@@ -27,6 +27,8 @@ public:
 	};
 
 private:
+	static constexpr int MAX_LOD_COUNT = 4;
+
 	// Saved data
 	real_t _height_offset = 0.f;
 	real_t _visibility_range = 100.f; // TODO: drop and discuss storage migration
