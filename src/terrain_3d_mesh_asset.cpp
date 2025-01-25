@@ -261,7 +261,6 @@ real_t Terrain3DMeshAsset::get_lod_visibility_range_begin(const int p_lod) const
 }
 
 real_t Terrain3DMeshAsset::get_lod_visibility_range_end(const int p_lod) const {
-	// next is p_lod + 1, if it's greater than maximum lod, returns -1
 	if (p_lod < 0 || p_lod > get_maximum_lod()) {
 		return -1.f;
 	}
