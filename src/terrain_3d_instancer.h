@@ -50,6 +50,8 @@ private:
 	Ref<MultiMesh> _create_multimesh(const int p_mesh_id, const int lod, const TypedArray<Transform3D> &p_xforms = TypedArray<Transform3D>(), const PackedColorArray &p_colors = PackedColorArray()) const;
 	Vector2i _get_cell(const Vector3 &p_global_position, const int p_region_size);
 
+	void _on_mmi_visibility_changed(MultiMeshInstance3D *p_mmi, int p_mesh_id, const Vector2i &p_region_loc, const Vector2i p_cell, int p_current_lod);
+
 public:
 	Terrain3DInstancer() {}
 	~Terrain3DInstancer() { destroy(); }

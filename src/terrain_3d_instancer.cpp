@@ -110,23 +110,33 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 						String cstring = "_C" + Util::location_to_string(cell).trim_prefix("_");
 						mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
 						mmi->set_as_top_level(true);
-						mmi->set_visibility_range_begin(ma->get_lod_visibility_range_begin(lod));
+
+						real_t lod_begin = ma->get_lod_visibility_range_begin(lod);
+						if (lod == shadow_lod) {
+							// the lod that casts shadows needs to be visible with lower lods.
+							// we'll deal with shadow casting settings on `visibility_changed'.
+							lod_begin = 0.0f;
+						}
+						mmi->set_visibility_range_begin(lod_begin);
 
 						real_t lod_end = ma->get_lod_visibility_range_end(lod);
 						if (lod_end >= 0.0f) {
 							mmi->set_visibility_range_end(lod_end);
 						}
 
-						if (lod <= shadow_lod) {
-							mmi->set_cast_shadows_setting(ma->get_cast_shadows());
-						} else {
-							mmi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
-						}
-
 						if (visibility_margin > 0.0f) {
 							mmi->set_visibility_range_begin_margin(visibility_margin);
 							mmi->set_visibility_range_end_margin(visibility_margin);
 						}
+
+						// initialize shadows as if we're showing the furthest lod
+						if (lod < shadow_lod) {
+							mmi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+						} else {
+							mmi->set_cast_shadows_setting(ma->get_cast_shadows());
+						}
+
+						mmi->connect("visibility_changed", callable_mp(this, &Terrain3DInstancer::_on_mmi_visibility_changed).bind(mmi, mesh_id, region_loc, cell, lod));
 
 						cell_mmi_dict[cell] = mmi;
 						//Attach to tree
@@ -136,6 +146,7 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 							continue;
 						}
 						node_container->add_child(mmi, true);
+
 						// New MMI, cannot skip
 						modified = true;
 					}
@@ -147,6 +158,8 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 					// Create MM and assign to MMI
 					mmi = cell_mmi_dict[cell];
 					mmi->set_multimesh(_create_multimesh(mesh_id, lod, xforms, colors));
+
+					// TODO: update mmi
 
 					// Reposition the MMIs to their region location
 					Transform3D t = Transform3D();
@@ -337,6 +350,64 @@ Vector2i Terrain3DInstancer::_get_cell(const Vector3 &p_global_position, const i
 	cell.x = UtilityFunctions::posmod(UtilityFunctions::floori(p_global_position.x / vertex_spacing), p_region_size) / CELL_SIZE;
 	cell.y = UtilityFunctions::posmod(UtilityFunctions::floori(p_global_position.z / vertex_spacing), p_region_size) / CELL_SIZE;
 	return cell;
+}
+
+void Terrain3DInstancer::_on_mmi_visibility_changed(MultiMeshInstance3D *p_mmi, int p_mesh_id, const Vector2i &p_region_loc, const Vector2i p_cell, int p_current_lod) {
+	LOG(INFO, "MMI visibility changed for region ", p_region_loc, ", mesh ", p_mesh_id, ", cell ", p_cell, ", lod ", p_current_lod);
+
+	Ref<Terrain3DMeshAsset> ma = _terrain->get_assets()->get_mesh_asset(p_mesh_id);
+	const int shadow_lod = ma->get_shadow_lod();
+
+	if (p_current_lod > shadow_lod) {
+		// when lod changes happens above the shadow lod, we're in the regular case,
+		// everything was set up correctly on initialization.
+		return;
+	}
+
+	// when lod changes happens below the shadow lod, we need to differentiate two cases:
+	// - the visible lod is the shadow lod
+	// - the visible lod is below the shadow lod
+	// they will have different shadow casting settings.
+
+	// Find the lowest visible lod
+	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
+	const int maximum_lod = shadow_lod;
+	int lowest_visible_lod = shadow_lod;
+
+	for (int lod = 0; lod < shadow_lod; lod++) {
+		// Note we don't need to check the shadow lod itself, as it's handled by default
+		Vector2i mesh_key(p_mesh_id, lod);
+		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+
+		if (cell_mmi_dict.count(p_cell) == 0) {
+			continue;
+		}
+
+		MultiMeshInstance3D *mmi = cell_mmi_dict[p_cell];
+
+		if (mmi->is_visible()) {
+			lowest_visible_lod = lod;
+			break;
+		}
+	}
+
+	// Update the shadow lod's shadow casting setting
+	Vector2i mesh_key(p_mesh_id, shadow_lod);
+	CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+
+	if (cell_mmi_dict.count(p_cell) == 0) {
+		LOG(WARN, "Missing shadow lod ", shadow_lod, " for mesh ", p_mesh_id, " in cell ", p_cell);
+	}
+
+	MultiMeshInstance3D *shadow_mmi = cell_mmi_dict[p_cell];
+
+	LOG(DEBUG, "LOD Found for region ", p_region_loc, ", mesh ", p_mesh_id, ", cell ", p_cell, ", lod ", p_current_lod, ", smallest visible lod: ", lowest_visible_lod, "shadow lod:", shadow_lod, "setting ", (lowest_visible_lod == shadow_lod) ? "cast shadows" : "shadows only");
+
+	if (lowest_visible_lod == shadow_lod) {
+		shadow_mmi->set_cast_shadows_setting(ma->get_cast_shadows());
+	} else {
+		shadow_mmi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+	}
 }
 
 ///////////////////////////
