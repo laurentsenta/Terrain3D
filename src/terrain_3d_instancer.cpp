@@ -88,6 +88,7 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 				MeshMMIDict &mesh_mmi_dict = _mmi_nodes[region_loc];
 
 				int max_lod = ma->get_maximum_lod();
+				int shadow_lod = ma->get_shadow_lod();
 
 				for (int lod = 0; lod <= max_lod; lod++) {
 					Vector2i mesh_key(mesh_id, lod);
@@ -110,13 +111,17 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 						mmi->set_as_top_level(true);
 						mmi->set_visibility_range_begin(ma->get_lod_visibility_range_begin(lod));
 
-
 						real_t lod_end = ma->get_lod_visibility_range_end(lod);
 						if (lod_end >= 0.0f) {
 							mmi->set_visibility_range_end(lod_end);
 						}
 
-						mmi->set_cast_shadows_setting(ma->get_cast_shadows());
+						if (lod <= shadow_lod) {
+							mmi->set_cast_shadows_setting(ma->get_cast_shadows());
+						} else {
+							mmi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+						}
+
 						// TODO: Discuss storage / uprage path for visibility range
 						// mmi->set_visibility_range_end(ma->get_visibility_range());
 						// TODO: Review margin when implementing lods

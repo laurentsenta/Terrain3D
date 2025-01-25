@@ -213,13 +213,13 @@ void Terrain3DMeshAsset::set_cast_shadows(const GeometryInstance3D::ShadowCastin
 }
 
 void Terrain3DMeshAsset::set_maximum_lod(const int p_lod) {
-	_maximum_lod = CLAMP(p_lod, 0, MIN(3, get_mesh_count() - 1)); // TODO: use const
+	_maximum_lod = CLAMP(p_lod, 0, MIN(3, get_mesh_count() - 1)); // TODO: use const, 3 is max lod - 1
 	LOG(INFO, "Setting maximum LOD: ", _maximum_lod);
 	emit_signal("instancer_setting_changed");
 }
 
 void Terrain3DMeshAsset::set_shadow_lod(const int p_lod) {
-	_shadow_lod = CLAMP(p_lod, 0, get_mesh_count() - 1);
+	_shadow_lod = CLAMP(p_lod, 0, get_maximum_lod());
 	LOG(INFO, "Setting shadow LOD: ", _shadow_lod);
 	emit_signal("instancer_setting_changed");
 }

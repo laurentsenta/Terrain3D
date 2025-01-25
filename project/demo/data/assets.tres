@@ -25,6 +25,7 @@ generated_type = 1
 name = "TestMultimesh"
 id = 1
 maximum_lod = 3
+shadow_lod = 2
 lod_0_visibility_range = 10.0
 lod_1_visibility_range = 20.0
 lod_2_visibility_range = 30.0
