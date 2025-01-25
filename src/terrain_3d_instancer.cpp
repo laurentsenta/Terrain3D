@@ -85,55 +85,59 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 					_terrain->get_mmi_parent()->add_child(node, true);
 				}
 
-				// Retrieve MMI or create one
+				// Retrieve MMI or create one for every lod
 				MeshMMIDict &mesh_mmi_dict = _mmi_nodes[region_loc];
 
-				int lod = 0; // TODO Hard coded LOD0 for now
-				Vector2i mesh_key(mesh_id, lod);
-				CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+				int max_lod = ma->get_maximum_lod();
 
-				MultiMeshInstance3D *mmi;
-				if (cell_mmi_dict.count(cell) == 0) {
-					mmi = memnew(MultiMeshInstance3D);
-					LOG(DEBUG, "No MMI found, Created new MultiMeshInstance3D: ", uint64_t(mmi));
-					// Node name is MMI3D_Cell##_##_Mesh#
-					String cstring = "_C" + Util::location_to_string(cell).trim_prefix("_");
-					mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
-					mmi->set_as_top_level(true);
-					mmi->set_cast_shadows_setting(ma->get_cast_shadows());
-					mmi->set_visibility_range_end(ma->get_visibility_range());
-					// Review margin when implementing lods
-					//mmi->set_visibility_range_end_margin(ma->get_visibility_margin());
-					cell_mmi_dict[cell] = mmi;
-					//Attach to tree
-					Node *node_container = _terrain->get_mmi_parent()->get_node_internal(rname);
-					if (node_container == nullptr) {
-						LOG(ERROR, rname, " isn't attached to the tree.");
+				for (int lod = 0; lod <= max_lod; lod++) {
+					Vector2i mesh_key(mesh_id, lod);
+					CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+
+					MultiMeshInstance3D *mmi;
+					if (cell_mmi_dict.count(cell) == 0) {
+						mmi = memnew(MultiMeshInstance3D);
+						LOG(DEBUG, "No MMI found, Created new MultiMeshInstance3D: ", uint64_t(mmi));
+						// Node name is MMI3D_Cell##_##_Mesh#
+						String cstring = "_C" + Util::location_to_string(cell).trim_prefix("_");
+						mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
+						mmi->set_as_top_level(true);
+						mmi->set_visibility_range_begin(ma->get_lod_distance_begin(lod));
+						mmi->set_cast_shadows_setting(ma->get_cast_shadows());
+						mmi->set_visibility_range_end(ma->get_visibility_range());
+						// TODO: Review margin when implementing lods
+						//mmi->set_visibility_range_end_margin(ma->get_visibility_margin());
+						cell_mmi_dict[cell] = mmi;
+						//Attach to tree
+						Node *node_container = _terrain->get_mmi_parent()->get_node_internal(rname);
+						if (node_container == nullptr) {
+							LOG(ERROR, rname, " isn't attached to the tree.");
+							continue;
+						}
+						node_container->add_child(mmi, true);
+						// New MMI, cannot skip
+						modified = true;
+					}
+					// If data hasn't changed since last _update_mmis, skip
+					if (modified == false) {
 						continue;
 					}
-					node_container->add_child(mmi, true);
-					// New MMI, cannot skip
-					modified = true;
+
+					// Create MM and assign to MMI
+					mmi = cell_mmi_dict[cell];
+					mmi->set_multimesh(_create_multimesh(mesh_id, xforms, colors));
+
+					// Reposition the MMIs to their region location
+					Transform3D t = Transform3D();
+					int region_size = region->get_region_size();
+					real_t vertex_spacing = _terrain->get_vertex_spacing();
+					t.origin.x += region_loc.x * region_size * vertex_spacing;
+					t.origin.z += region_loc.y * region_size * vertex_spacing;
+					mmi->set_global_transform(t);
+
+					// Set the cell modified state to false
+					triple[2] = false;
 				}
-				// If data hasn't changed since last _update_mmis, skip
-				if (modified == false) {
-					continue;
-				}
-
-				// Create MM and assign to MMI
-				mmi = cell_mmi_dict[cell];
-				mmi->set_multimesh(_create_multimesh(mesh_id, xforms, colors));
-
-				// Reposition the MMIs to their region location
-				Transform3D t = Transform3D();
-				int region_size = region->get_region_size();
-				real_t vertex_spacing = _terrain->get_vertex_spacing();
-				t.origin.x += region_loc.x * region_size * vertex_spacing;
-				t.origin.z += region_loc.y * region_size * vertex_spacing;
-				mmi->set_global_transform(t);
-
-				// Set the cell modified state to false
-				triple[2] = false;
 			}
 		}
 	}

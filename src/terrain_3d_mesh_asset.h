@@ -41,6 +41,11 @@ private:
 	int _maximum_lod = 0;
 	int _shadow_lod = 0;
 
+	float _lod_0_distance_begin = 0.f;
+	float _lod_1_distance_begin = 0.f;
+	float _lod_2_distance_begin = 0.f;
+	float _lod_3_distance_begin = 0.f;
+
 	// Working data
 	TypedArray<Mesh> _meshes;
 	Ref<Texture2D> _thumbnail;
@@ -78,6 +83,17 @@ public:
 	int get_maximum_lod() const { return _maximum_lod; }
 	void set_shadow_lod(const int p_lod);
 	int get_shadow_lod() const { return _shadow_lod; }
+
+	void set_lod_0_distance_begin(const real_t p_distance);
+	real_t get_lod_0_distance_begin() const { return _lod_0_distance_begin; }
+	void set_lod_1_distance_begin(const real_t p_distance);
+	real_t get_lod_1_distance_begin() const { return _lod_1_distance_begin; }
+	void set_lod_2_distance_begin(const real_t p_distance);
+	real_t get_lod_2_distance_begin() const { return _lod_2_distance_begin; }
+	void set_lod_3_distance_begin(const real_t p_distance);
+	real_t get_lod_3_distance_begin() const { return _lod_3_distance_begin; }
+
+	real_t get_lod_distance_begin(const int p_lod) const;
 
 	void set_scene_file(const Ref<PackedScene> &p_scene_file);
 	Ref<PackedScene> get_scene_file() const { return _packed_scene; }
