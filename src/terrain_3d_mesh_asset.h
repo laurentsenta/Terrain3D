@@ -112,6 +112,7 @@ public:
 
 	Ref<Mesh> get_mesh(const int p_index = 0);
 	int get_mesh_count() const { return _meshes.size(); }
+	void set_mesh_count(const int p_count) {} // no-op, used to expose the property in the editor
 	Ref<Texture2D> get_thumbnail() const { return _thumbnail; }
 
 protected:

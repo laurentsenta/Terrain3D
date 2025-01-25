@@ -390,7 +390,9 @@ void Terrain3DMeshAsset::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
 		}
 	}
-	// TODO: validate lod if out of bound?
+	if (p_property.name == StringName("mesh_count")) {
+		p_property.usage = PROPERTY_USAGE_READ_ONLY;
+	}
 }
 
 void Terrain3DMeshAsset::_bind_methods() {
@@ -442,6 +444,7 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_generated_size"), &Terrain3DMeshAsset::get_generated_size);
 	ClassDB::bind_method(D_METHOD("get_mesh", "index"), &Terrain3DMeshAsset::get_mesh, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_mesh_count"), &Terrain3DMeshAsset::get_mesh_count);
+	ClassDB::bind_method(D_METHOD("set_mesh_count", "count"), &Terrain3DMeshAsset::set_mesh_count);
 	ClassDB::bind_method(D_METHOD("get_thumbnail"), &Terrain3DMeshAsset::get_thumbnail);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE), "set_name", "get_name");
@@ -457,6 +460,7 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_1_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_1_visibility_range", "get_lod_1_visibility_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_2_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_2_visibility_range", "get_lod_2_visibility_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_3_visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_lod_3_visibility_range", "get_lod_3_visibility_range");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_count", PROPERTY_HINT_NONE), "set_mesh_count", "get_mesh_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "scene_file", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"), "set_scene_file", "get_scene_file");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generated_type", PROPERTY_HINT_ENUM, "None,Texture Card"), "set_generated_type", "get_generated_type");
