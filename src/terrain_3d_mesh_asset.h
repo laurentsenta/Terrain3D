@@ -48,6 +48,9 @@ private:
 	TypedArray<Mesh> _meshes;
 	Ref<Texture2D> _thumbnail;
 
+	int get_valid_lod() const;
+	void refresh_valid_lods();
+
 	// No signal versions
 	void _set_generated_type(const GenType p_type);
 	void _set_material_override(const Ref<Material> &p_material);

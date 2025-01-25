@@ -206,8 +206,23 @@ void Terrain3DMeshAsset::set_cast_shadows(const GeometryInstance3D::ShadowCastin
 	emit_signal("instancer_setting_changed");
 }
 
+int Terrain3DMeshAsset::get_valid_lod() const {
+	// As long as the packed scene was not loaded, we don't enforce the LOD ids
+	if (_packed_scene.is_null()) {
+		return MAX_LOD_COUNT - 1;
+	}
+
+	return MIN(MAX_LOD_COUNT - 1, get_mesh_count() - 1);
+}
+
+void Terrain3DMeshAsset::refresh_valid_lods() {
+	// Make sure the lods are consistent with the mesh count
+	set_maximum_lod(get_maximum_lod());
+	set_shadow_lod(get_shadow_lod());
+}
+
 void Terrain3DMeshAsset::set_maximum_lod(const int p_lod) {
-	_maximum_lod = CLAMP(p_lod, 0, MIN(MAX_LOD_COUNT - 1, get_mesh_count() - 1));
+	_maximum_lod = CLAMP(p_lod, 0, get_valid_lod());
 	LOG(INFO, "Setting maximum LOD: ", _maximum_lod);
 	emit_signal("instancer_setting_changed");
 }
@@ -315,6 +330,10 @@ void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
 		set_generated_type(TYPE_TEXTURE_CARD);
 		_density = 10.f;
 	}
+
+	// Make sure LODs are still valid
+	refresh_valid_lods();
+
 	LOG(DEBUG, "Emitting file_changed");
 	emit_signal("file_changed");
 	emit_signal("instancer_setting_changed");
