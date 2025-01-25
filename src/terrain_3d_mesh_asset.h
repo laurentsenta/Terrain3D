@@ -94,6 +94,7 @@ public:
 	real_t get_lod_3_distance_begin() const { return _lod_3_distance_begin; }
 
 	real_t get_lod_distance_begin(const int p_lod) const;
+	real_t get_lod_distance_end(const int p_lod) const;
 
 	void set_scene_file(const Ref<PackedScene> &p_scene_file);
 	Ref<PackedScene> get_scene_file() const { return _packed_scene; }

@@ -43,13 +43,12 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 		for (int m = 0; m < mesh_types.size(); m++) {
 			int mesh_id = mesh_types[m];
 
-			// Verify mesh id is valid and has a mesh
+			// Verify mesh id is valid and has some meshes
 			Ref<Terrain3DMeshAsset> ma = _terrain->get_assets()->get_mesh_asset(mesh_id);
 			Ref<Mesh> mesh;
 			if (ma.is_valid()) {
-				mesh = ma->get_mesh();
-				if (mesh.is_null()) {
-					LOG(WARN, "MeshAsset ", mesh_id, " valid but mesh is null, skipping");
+				if (ma-> get_mesh_count() == 0) {
+					LOG(WARN, "MeshAsset ", mesh_id, " valid but has no meshes, skipping");
 					continue;
 				}
 			} else {
@@ -94,6 +93,13 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 					Vector2i mesh_key(mesh_id, lod);
 					CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
+					// Verify the LOD exists
+					mesh = ma->get_mesh(lod);
+					if (mesh.is_null()) {
+						LOG(WARN, "MeshAsset ", mesh_id, " valid but mesh for lod ", lod, " is null, skipping");
+						continue;
+					}
+
 					MultiMeshInstance3D *mmi;
 					if (cell_mmi_dict.count(cell) == 0) {
 						mmi = memnew(MultiMeshInstance3D);
@@ -103,8 +109,15 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 						mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
 						mmi->set_as_top_level(true);
 						mmi->set_visibility_range_begin(ma->get_lod_distance_begin(lod));
+
+						real_t lod_end = ma->get_lod_distance_end(lod);
+						if (lod_end > 0.0f) {
+							mmi->set_visibility_range_end(lod_end);
+						}
+
 						mmi->set_cast_shadows_setting(ma->get_cast_shadows());
-						mmi->set_visibility_range_end(ma->get_visibility_range());
+						// TODO: Discuss storage / uprage path for visibility range
+						// mmi->set_visibility_range_end(ma->get_visibility_range());
 						// TODO: Review margin when implementing lods
 						//mmi->set_visibility_range_end_margin(ma->get_visibility_margin());
 						cell_mmi_dict[cell] = mmi;
@@ -125,7 +138,7 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 
 					// Create MM and assign to MMI
 					mmi = cell_mmi_dict[cell];
-					mmi->set_multimesh(_create_multimesh(mesh_id, xforms, colors));
+					mmi->set_multimesh(_create_multimesh(mesh_id, lod, xforms, colors));
 
 					// Reposition the MMIs to their region location
 					Transform3D t = Transform3D();
@@ -275,7 +288,7 @@ void Terrain3DInstancer::_backup_region(const Ref<Terrain3DRegion> &p_region) {
 	}
 }
 
-Ref<MultiMesh> Terrain3DInstancer::_create_multimesh(const int p_mesh_id, const TypedArray<Transform3D> &p_xforms, const PackedColorArray &p_colors) const {
+Ref<MultiMesh> Terrain3DInstancer::_create_multimesh(const int p_mesh_id, const int lod, const TypedArray<Transform3D> &p_xforms, const PackedColorArray &p_colors) const {
 	Ref<MultiMesh> mm;
 	IS_INIT(mm);
 	Ref<Terrain3DMeshAsset> mesh_asset = _terrain->get_assets()->get_mesh_asset(p_mesh_id);
@@ -283,7 +296,11 @@ Ref<MultiMesh> Terrain3DInstancer::_create_multimesh(const int p_mesh_id, const 
 		LOG(ERROR, "No mesh id ", p_mesh_id, " found");
 		return mm;
 	}
-	Ref<Mesh> mesh = mesh_asset->get_mesh();
+	Ref<Mesh> mesh = mesh_asset->get_mesh(lod);
+	if (mesh.is_null()) {
+		LOG(ERROR, "No lod for mesh id ", p_mesh_id, " lod ", lod, " found");
+		return mm;
+	}
 	mm.instantiate();
 	mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	mm->set_use_colors(true);

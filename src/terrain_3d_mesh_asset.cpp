@@ -262,6 +262,15 @@ real_t Terrain3DMeshAsset::get_lod_distance_begin(const int p_lod) const {
 	}
 }
 
+real_t Terrain3DMeshAsset::get_lod_distance_end(const int p_lod) const {
+	// next is p_lod + 1, if it's greater than maximum lod, returns -1
+	if (p_lod < 0 || p_lod >= get_maximum_lod()) {
+		return -1.f;
+	}
+
+	return get_lod_distance_begin(p_lod + 1);
+}
+
 void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
 	LOG(INFO, "Setting scene file and instantiating node: ", p_scene_file);
 	_packed_scene = p_scene_file;
