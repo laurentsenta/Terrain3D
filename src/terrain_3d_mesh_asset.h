@@ -38,6 +38,8 @@ private:
 	Ref<PackedScene> _packed_scene;
 	Ref<Material> _material_override;
 	real_t _density = 10.f;
+	int _maximum_lod = 0;
+	int _shadow_lod = 0;
 
 	// Working data
 	TypedArray<Mesh> _meshes;
@@ -72,6 +74,10 @@ public:
 	real_t get_visibility_margin() const { return _visibility_margin; };
 	void set_cast_shadows(const GeometryInstance3D::ShadowCastingSetting p_cast_shadows);
 	GeometryInstance3D::ShadowCastingSetting get_cast_shadows() const { return _cast_shadows; };
+	void set_maximum_lod(const int p_lod);
+	int get_maximum_lod() const { return _maximum_lod; }
+	void set_shadow_lod(const int p_lod);
+	int get_shadow_lod() const { return _shadow_lod; }
 
 	void set_scene_file(const Ref<PackedScene> &p_scene_file);
 	Ref<PackedScene> get_scene_file() const { return _packed_scene; }
