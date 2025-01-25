@@ -194,12 +194,6 @@ void Terrain3DMeshAsset::set_density(const real_t p_density) {
 	_density = CLAMP(p_density, 0.01f, 10.f);
 }
 
-void Terrain3DMeshAsset::set_visibility_range(const real_t p_visibility_range) {
-	_visibility_range = CLAMP(p_visibility_range, 0.f, 100000.f);
-	LOG(INFO, "Setting visbility range: ", _visibility_range);
-	emit_signal("instancer_setting_changed");
-}
-
 void Terrain3DMeshAsset::set_visibility_margin(const real_t p_visibility_margin) {
 	_visibility_margin = CLAMP(p_visibility_margin, 0.f, 100000.f);
 	LOG(INFO, "Setting visbility margin: ", _visibility_margin);
@@ -413,8 +407,6 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height_offset"), &Terrain3DMeshAsset::get_height_offset);
 	ClassDB::bind_method(D_METHOD("set_density", "density"), &Terrain3DMeshAsset::set_density);
 	ClassDB::bind_method(D_METHOD("get_density"), &Terrain3DMeshAsset::get_density);
-	ClassDB::bind_method(D_METHOD("set_visibility_range", "distance"), &Terrain3DMeshAsset::set_visibility_range);
-	ClassDB::bind_method(D_METHOD("get_visibility_range"), &Terrain3DMeshAsset::get_visibility_range);
 	ClassDB::bind_method(D_METHOD("set_visibility_margin", "distance"), &Terrain3DMeshAsset::set_visibility_margin);
 	ClassDB::bind_method(D_METHOD("get_visibility_margin"), &Terrain3DMeshAsset::get_visibility_margin);
 	ClassDB::bind_method(D_METHOD("set_cast_shadows", "mode"), &Terrain3DMeshAsset::set_cast_shadows);
@@ -450,7 +442,6 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE), "set_id", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height_offset", PROPERTY_HINT_RANGE, "-20.0,20.0,.005"), "set_height_offset", "get_height_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "density", PROPERTY_HINT_RANGE, ".01,10.0,.005"), "set_density", "get_density");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_visibility_range", "get_visibility_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_margin", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater"), "set_visibility_margin", "get_visibility_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadows", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows", "get_cast_shadows");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "maximum_lod", PROPERTY_HINT_NONE), "set_maximum_lod", "get_maximum_lod");
@@ -465,4 +456,14 @@ void Terrain3DMeshAsset::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generated_type", PROPERTY_HINT_ENUM, "None,Texture Card"), "set_generated_type", "get_generated_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generated_faces", PROPERTY_HINT_NONE), "set_generated_faces", "get_generated_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "generated_size", PROPERTY_HINT_NONE), "set_generated_size", "get_generated_size");
+
+	//DEPRECATED 1.0 - Remove 1.1
+	ClassDB::bind_method(D_METHOD("set_visibility_range", "distance"), &Terrain3DMeshAsset::set_visibility_range);
+	ClassDB::bind_method(D_METHOD("get_visibility_range"), &Terrain3DMeshAsset::get_lod_0_visibility_range);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range", PROPERTY_HINT_RANGE, "0.,4096.0,.05,or_greater", PROPERTY_USAGE_NO_EDITOR), "set_visibility_range", "get_visibility_range");
+}
+
+//DEPRECATED 1.0 - Remove 1.1
+void Terrain3DMeshAsset::set_visibility_range(const real_t p_visibility_range) {
+	set_lod_0_visibility_range(p_visibility_range);
 }

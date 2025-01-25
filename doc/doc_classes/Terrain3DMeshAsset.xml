@@ -71,6 +71,7 @@
 		</member>
 		<member name="visibility_range" type="float" setter="set_visibility_range" getter="get_visibility_range" default="100.0">
 			Sets [code skip-lint]GeometryInstance3D.visibility_range_end[/code] on all MultiMeshInstances used by this mesh. Allows the renderer to cull MMIs beyond this distance. Set to 0 to disable culling.
+			Deprecated, see [set_lod_0_visibility_range].
 		</member>
 	</members>
 	<signals>
