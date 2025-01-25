@@ -221,38 +221,41 @@ void Terrain3DInstancer::_destroy_mmi_by_cell(const Vector2i &p_region_loc, cons
 	}
 	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
 
-	// TODO Hardcoded LOD0, loop through lods
-	Vector2i mesh_key(p_mesh_id, 0);
-	if (mesh_mmi_dict.count(mesh_key) == 0) {
-		return;
-	}
-	CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+	for (int lod = 0; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+		Vector2i mesh_key(p_mesh_id, lod);
+		if (mesh_mmi_dict.count(mesh_key) == 0) {
+			return;
+		}
+		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
-	if (cell_mmi_dict.count(p_cell) == 0) {
-		return;
-	}
-	MultiMeshInstance3D *mmi = cell_mmi_dict[p_cell];
-	LOG(EXTREME, "Freeing ", uint64_t(mmi), " and erasing mmi cell ", p_cell);
-	cell_mmi_dict.erase(p_cell);
-	remove_from_tree(mmi);
-	memdelete_safely(mmi);
+		if (cell_mmi_dict.count(p_cell) == 0) {
+			return;
+		}
 
-	if (cell_mmi_dict.empty()) {
-		LOG(EXTREME, "Removing mesh ", mesh_key, " from cell MMI dictionary");
-		mesh_mmi_dict.erase(mesh_key);
-	}
+		MultiMeshInstance3D *mmi = cell_mmi_dict[p_cell];
+		LOG(EXTREME, "Freeing ", uint64_t(mmi), " and erasing mmi cell ", p_cell);
+		cell_mmi_dict.erase(p_cell);
+		remove_from_tree(mmi);
+		memdelete_safely(mmi);
 
-	if (mesh_mmi_dict.empty()) {
-		LOG(EXTREME, "Removing region ", p_region_loc, " from mesh MMI dictionary");
-		_mmi_nodes.erase(p_region_loc);
-		if (_mmi_containers.count(p_region_loc) > 0) {
-			Node *node = _mmi_containers[p_region_loc];
-			if (node && node->get_child_count() == 0) {
-				LOG(EXTREME, "Removing ", node->get_name());
-				_mmi_containers.erase(p_region_loc);
-				remove_from_tree(node);
-				memdelete_safely(node);
+		if (cell_mmi_dict.empty()) {
+			LOG(EXTREME, "Removing mesh ", mesh_key, " from cell MMI dictionary");
+			mesh_mmi_dict.erase(mesh_key);
+		}
+
+		if (mesh_mmi_dict.empty()) {
+			LOG(EXTREME, "Removing region ", p_region_loc, " from mesh MMI dictionary");
+			_mmi_nodes.erase(p_region_loc);
+			if (_mmi_containers.count(p_region_loc) > 0) {
+				Node *node = _mmi_containers[p_region_loc];
+				if (node && node->get_child_count() == 0) {
+					LOG(EXTREME, "Removing ", node->get_name());
+					_mmi_containers.erase(p_region_loc);
+					remove_from_tree(node);
+					memdelete_safely(node);
+				}
 			}
+			return; // early exit
 		}
 	}
 }
@@ -264,20 +267,21 @@ void Terrain3DInstancer::_destroy_mmi_by_location(const Vector2i &p_region_loc, 
 	}
 	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
 
-	// TODO Hard coded LOD0 - loop through
-	Vector2i mesh_key(p_mesh_id, 0);
-	CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+	for (int lod = 0; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+		Vector2i mesh_key(p_mesh_id, lod);
+		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
-	// Iterate over keys as functions will invalidate standard iterator
-	std::vector<Vector2i> keys;
-	keys.reserve(cell_mmi_dict.size());
-	int i = 0;
-	for (auto &it : cell_mmi_dict) {
-		keys.push_back(it.first);
-		i++;
-	}
-	for (auto &cell : keys) {
-		_destroy_mmi_by_cell(p_region_loc, p_mesh_id, cell);
+		// Iterate over keys as functions will invalidate standard iterator
+		std::vector<Vector2i> keys;
+		keys.reserve(cell_mmi_dict.size());
+		int i = 0;
+		for (auto &it : cell_mmi_dict) {
+			keys.push_back(it.first);
+			i++;
+		}
+		for (auto &cell : keys) {
+			_destroy_mmi_by_cell(p_region_loc, p_mesh_id, cell);
+		}
 	}
 }
 

@@ -26,9 +26,9 @@ public:
 		TYPE_MAX,
 	};
 
-private:
 	static constexpr int MAX_LOD_COUNT = 4;
 
+private:
 	// Saved data
 	real_t _height_offset = 0.f;
 	real_t _visibility_margin = 0.f;
