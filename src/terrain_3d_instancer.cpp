@@ -163,13 +163,12 @@ void Terrain3DInstancer::_setup_mmi_lod(MultiMeshInstance3D *p_mmi, const Ref<Te
 	}
 
 	real_t visibility_margin = p_ma->get_visibility_margin();
-
-	p_mmi->set_cast_shadows_setting(p_ma->get_lod_cast_shadows(p_lod));
-
 	if (visibility_margin > 0.0f) {
 		p_mmi->set_visibility_range_begin_margin(visibility_margin);
 		p_mmi->set_visibility_range_end_margin(visibility_margin);
 	}
+
+	p_mmi->set_cast_shadows_setting(p_ma->get_lod_cast_shadows(p_lod));
 }
 
 void Terrain3DInstancer::_update_vertex_spacing(const real_t p_vertex_spacing) {
