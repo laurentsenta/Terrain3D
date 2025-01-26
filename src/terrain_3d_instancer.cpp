@@ -88,8 +88,6 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 				MeshMMIDict &mesh_mmi_dict = _mmi_nodes[region_loc];
 
 				int max_lod = ma->get_maximum_lod();
-				int shadow_lod = ma->get_shadow_lod();
-				real_t visibility_margin = ma->get_visibility_margin();
 
 				for (int lod = 0; lod <= max_lod; lod++) {
 					Vector2i mesh_key(mesh_id, lod);
@@ -110,23 +108,6 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 						String cstring = "_C" + Util::location_to_string(cell).trim_prefix("_");
 						mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
 						mmi->set_as_top_level(true);
-						mmi->set_visibility_range_begin(ma->get_lod_visibility_range_begin(lod));
-
-						real_t lod_end = ma->get_lod_visibility_range_end(lod);
-						if (lod_end >= 0.0f) {
-							mmi->set_visibility_range_end(lod_end);
-						}
-
-						if (lod <= shadow_lod) {
-							mmi->set_cast_shadows_setting(ma->get_cast_shadows());
-						} else {
-							mmi->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
-						}
-
-						if (visibility_margin > 0.0f) {
-							mmi->set_visibility_range_begin_margin(visibility_margin);
-							mmi->set_visibility_range_end_margin(visibility_margin);
-						}
 
 						cell_mmi_dict[cell] = mmi;
 						//Attach to tree
@@ -148,6 +129,8 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 					mmi = cell_mmi_dict[cell];
 					mmi->set_multimesh(_create_multimesh(mesh_id, lod, xforms, colors));
 
+					_setup_mmi_lod(mmi, ma, lod);
+
 					// Reposition the MMIs to their region location
 					Transform3D t = Transform3D();
 					int region_size = region->get_region_size();
@@ -161,6 +144,26 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 				}
 			}
 		}
+	}
+}
+
+void Terrain3DInstancer::_setup_mmi_lod(MultiMeshInstance3D *p_mmi, const Ref<Terrain3DMeshAsset> &p_ma, const int p_lod) {
+	p_mmi->set_visibility_range_begin(p_ma->get_lod_visibility_range_begin(p_lod));
+
+	real_t lod_end = p_ma->get_lod_visibility_range_end(p_lod);
+	if (lod_end >= 0.0f) {
+		p_mmi->set_visibility_range_end(lod_end);
+	}
+
+	int shadow_lod = p_ma->get_shadow_lod();
+	real_t visibility_margin = p_ma->get_visibility_margin();
+
+	// This will be the entry point to work on shadow lod
+	p_mmi->set_cast_shadows_setting(p_ma->get_cast_shadows());
+
+	if (visibility_margin > 0.0f) {
+		p_mmi->set_visibility_range_begin_margin(visibility_margin);
+		p_mmi->set_visibility_range_end_margin(visibility_margin);
 	}
 }
 
