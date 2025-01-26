@@ -430,6 +430,10 @@ Ref<Mesh> Terrain3DMeshAsset::get_lod_mesh(const int p_lod_id) {
 		return get_mesh(get_minimum_shadow_lod());
 	}
 
+	if (p_lod_id > get_maximum_lod()) {
+		return Ref<Mesh>();
+	}
+
 	return get_mesh(p_lod_id);
 }
 

@@ -87,20 +87,27 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 				// Retrieve MMI or create one for every lod
 				MeshMMIDict &mesh_mmi_dict = _mmi_nodes[region_loc];
 
-				int max_lod = ma->get_maximum_lod();
-
-				for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= max_lod; lod++) {
+				for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
 					Vector2i mesh_key(mesh_id, lod);
 					CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
+					MultiMeshInstance3D *mmi;
 
-					// Verify the LOD exists
 					mesh = ma->get_lod_mesh(lod);
+
+					// Ensure the lod is freed if it's not in use anymore
 					if (mesh.is_null()) {
-						LOG(WARN, "MeshAsset ", mesh_id, " valid but mesh for lod ", lod, " is null, skipping");
+						if (cell_mmi_dict.count(cell) != 0) {
+							// `shallow delete', that does not attempt to free the containers like `_destroy_mmi_by_cell' does.
+							// This case occurs only when changing max lod or min shadow lod settings.
+							mmi = cell_mmi_dict[cell];
+							LOG(EXTREME, "Freeing ", uint64_t(mmi), " and erasing mmi cell ", cell);
+							cell_mmi_dict.erase(cell);
+							remove_from_tree(mmi);
+							memdelete_safely(mmi);
+						}
 						continue;
 					}
 
-					MultiMeshInstance3D *mmi;
 					if (cell_mmi_dict.count(cell) == 0) {
 						mmi = memnew(MultiMeshInstance3D);
 						LOG(DEBUG, "No MMI found, Created new MultiMeshInstance3D: ", uint64_t(mmi));
