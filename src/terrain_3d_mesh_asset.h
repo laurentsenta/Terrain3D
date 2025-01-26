@@ -41,7 +41,8 @@ private:
 	Ref<Material> _material_override;
 	real_t _density = 10.f;
 	int _maximum_lod = 0;
-	int _shadow_lod = 0;
+	int _minimum_shadow_lod = 0;
+	int _maximum_shadow_lod = 0;
 
 	PackedFloat32Array _lod_visibility_ranges;
 
@@ -82,10 +83,13 @@ public:
 	real_t get_visibility_margin() const { return _visibility_margin; };
 	void set_cast_shadows(const GeometryInstance3D::ShadowCastingSetting p_cast_shadows);
 	GeometryInstance3D::ShadowCastingSetting get_cast_shadows() const { return _cast_shadows; };
+	
 	void set_maximum_lod(const int p_lod);
 	int get_maximum_lod() const { return _maximum_lod; }
-	void set_shadow_lod(const int p_lod);
-	int get_shadow_lod() const { return _shadow_lod; }
+	void set_minimum_shadow_lod(const int p_lod);
+	int get_minimum_shadow_lod() const { return _minimum_shadow_lod; }
+	void set_maximum_shadow_lod(const int p_lod);
+	int get_maximum_shadow_lod() const { return _maximum_shadow_lod; }
 
 	void set_lod_visibility_range(const int p_lod, const real_t p_distance);
 

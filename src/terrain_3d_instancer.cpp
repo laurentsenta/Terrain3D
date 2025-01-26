@@ -155,7 +155,6 @@ void Terrain3DInstancer::_setup_mmi_lod(MultiMeshInstance3D *p_mmi, const Ref<Te
 		p_mmi->set_visibility_range_end(lod_end);
 	}
 
-	int shadow_lod = p_ma->get_shadow_lod();
 	real_t visibility_margin = p_ma->get_visibility_margin();
 
 	p_mmi->set_cast_shadows_setting(p_ma->get_lod_cast_shadows(p_lod));
