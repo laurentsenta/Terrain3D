@@ -90,9 +90,10 @@ public:
 	int get_minimum_shadow_lod() const { return _minimum_shadow_lod; }
 	void set_maximum_shadow_lod(const int p_lod);
 	int get_maximum_shadow_lod() const { return _maximum_shadow_lod; }
+	Ref<Mesh> get_lod_mesh(const int p_lod_id = 0);
+	GeometryInstance3D::ShadowCastingSetting get_lod_cast_shadows(const int p_lod_id) const;
 
 	void set_lod_visibility_range(const int p_lod, const real_t p_distance);
-
 	void set_lod_0_visibility_range(const real_t p_distance);
 	real_t get_lod_0_visibility_range() const { return _lod_visibility_ranges[0]; }
 	void set_lod_1_visibility_range(const real_t p_distance);
@@ -102,8 +103,8 @@ public:
 	void set_lod_3_visibility_range(const real_t p_distance);
 	real_t get_lod_3_visibility_range() const { return _lod_visibility_ranges[3]; }
 
-	real_t get_lod_visibility_range_begin(const int p_lod) const;
-	real_t get_lod_visibility_range_end(const int p_lod) const;
+	real_t get_lod_visibility_range_begin(const int p_lod_id) const;
+	real_t get_lod_visibility_range_end(const int p_lod_id) const;
 
 	void set_scene_file(const Ref<PackedScene> &p_scene_file);
 	Ref<PackedScene> get_scene_file() const { return _packed_scene; }
@@ -118,8 +119,7 @@ public:
 	void set_generated_size(const Vector2 &p_size);
 	Vector2 get_generated_size() const { return _generated_size; }
 
-	GeometryInstance3D::ShadowCastingSetting get_lod_cast_shadows(const int p_lod_id) const;
-	Ref<Mesh> get_mesh(const int p_lod_id = 0);
+	Ref<Mesh> get_mesh(const int p_index = 0);
 	int get_mesh_count() const { return _meshes.size(); }
 	void set_mesh_count(const int p_count) {} // no-op, used to expose the property in the editor
 	Ref<Texture2D> get_thumbnail() const { return _thumbnail; }

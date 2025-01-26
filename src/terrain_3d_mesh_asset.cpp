@@ -264,29 +264,30 @@ void Terrain3DMeshAsset::set_lod_3_visibility_range(const real_t p_distance) {
 	set_lod_visibility_range(3, p_distance);
 }
 
-real_t Terrain3DMeshAsset::get_lod_visibility_range_begin(const int p_lod) const {
-	if (p_lod < SHADOW_LOD_INSTANCE || p_lod > get_maximum_lod()) {
-		LOG(ERROR, "Invalid LOD: ", p_lod);
-		return -1.f;
-	}
-
-	if (p_lod == 0 || p_lod == SHADOW_LOD_INSTANCE) {
+real_t Terrain3DMeshAsset::get_lod_visibility_range_begin(const int p_lod_id) const {
+	if (p_lod_id == 0 || p_lod_id == SHADOW_LOD_INSTANCE) {
 		return 0.f;
 	}
 
-	return _lod_visibility_ranges[p_lod - 1];
-}
-
-real_t Terrain3DMeshAsset::get_lod_visibility_range_end(const int p_lod) const {
-	if (p_lod < SHADOW_LOD_INSTANCE || p_lod > get_maximum_lod()) {
+	if (p_lod_id < 0 || p_lod_id > get_maximum_lod()) {
+		LOG(ERROR, "Invalid LOD: ", p_lod_id);
 		return -1.f;
 	}
 
-	if (p_lod == SHADOW_LOD_INSTANCE) {
+	return _lod_visibility_ranges[p_lod_id - 1];
+}
+
+real_t Terrain3DMeshAsset::get_lod_visibility_range_end(const int p_lod_id) const {
+	if (p_lod_id == SHADOW_LOD_INSTANCE) {
 		return _lod_visibility_ranges[get_minimum_shadow_lod()];
 	}
 
-	return _lod_visibility_ranges[p_lod];
+	if (p_lod_id < 0 || p_lod_id > get_maximum_lod()) {
+		LOG(ERROR, "Invalid LOD: ", p_lod_id);
+		return -1.f;
+	}
+
+	return _lod_visibility_ranges[p_lod_id];
 }
 
 void Terrain3DMeshAsset::set_scene_file(const Ref<PackedScene> &p_scene_file) {
@@ -414,17 +415,27 @@ GeometryInstance3D::ShadowCastingSetting Terrain3DMeshAsset::get_lod_cast_shadow
 	return get_cast_shadows();
 }
 
-Ref<Mesh> Terrain3DMeshAsset::get_mesh(const int p_lod_id) {
+Ref<Mesh> Terrain3DMeshAsset::get_lod_mesh(const int p_lod_id) {
 	// Requesting the special case shadow lod
 	if (p_lod_id == SHADOW_LOD_INSTANCE) {
-		// we don't need a shadow lod because we're in the general case
+		// we don't use a shadow lod because we're in the base case
 		if (get_minimum_shadow_lod() == 0) {
-			return nullptr;
+			return Ref<Mesh>();
 		}
-		return _meshes[get_minimum_shadow_lod()];
+		// We completely disabled shadows
+		if (get_cast_shadows() == GeometryInstance3D::SHADOW_CASTING_SETTING_OFF) {
+			return Ref<Mesh>();
+		}
+
+		return get_mesh(get_minimum_shadow_lod());
 	}
-	if (p_lod_id >= 0 && p_lod_id < _meshes.size()) {
-		return _meshes[p_lod_id];
+
+	return get_mesh(p_lod_id);
+}
+
+Ref<Mesh> Terrain3DMeshAsset::get_mesh(const int p_index) {
+	if (p_index >= 0 && p_index < _meshes.size()) {
+		return _meshes[p_index];
 	}
 	return Ref<Mesh>();
 }

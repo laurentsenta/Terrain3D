@@ -94,7 +94,7 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 					CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
 					// Verify the LOD exists
-					mesh = ma->get_mesh(lod);
+					mesh = ma->get_lod_mesh(lod);
 					if (mesh.is_null()) {
 						LOG(WARN, "MeshAsset ", mesh_id, " valid but mesh for lod ", lod, " is null, skipping");
 						continue;
@@ -309,7 +309,7 @@ Ref<MultiMesh> Terrain3DInstancer::_create_multimesh(const int p_mesh_id, const 
 		LOG(ERROR, "No mesh id ", p_mesh_id, " found");
 		return mm;
 	}
-	Ref<Mesh> mesh = mesh_asset->get_mesh(lod);
+	Ref<Mesh> mesh = mesh_asset->get_lod_mesh(lod);
 	if (mesh.is_null()) {
 		LOG(ERROR, "No lod for mesh id ", p_mesh_id, " lod ", lod, " found");
 		return mm;
