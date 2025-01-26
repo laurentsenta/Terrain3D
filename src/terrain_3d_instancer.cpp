@@ -87,7 +87,7 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 				// Retrieve MMI or create one for every lod
 				MeshMMIDict &mesh_mmi_dict = _mmi_nodes[region_loc];
 
-				for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+				for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod < Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
 					Vector2i mesh_key(mesh_id, lod);
 					CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 					MultiMeshInstance3D *mmi;
@@ -275,7 +275,7 @@ void Terrain3DInstancer::_destroy_mmi_by_location(const Vector2i &p_region_loc, 
 	}
 	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
 
-	for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+	for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod < Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
 		Vector2i mesh_key(p_mesh_id, lod);
 		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
