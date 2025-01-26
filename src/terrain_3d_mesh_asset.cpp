@@ -403,10 +403,6 @@ GeometryInstance3D::ShadowCastingSetting Terrain3DMeshAsset::get_lod_cast_shadow
 	if (p_lod_id == SHADOW_LOD_INSTANCE) {
 		return GeometryInstance3D::SHADOW_CASTING_SETTING_SHADOWS_ONLY;
 	}
-	// We don't have a special case lod for shadows
-	if (get_minimum_shadow_lod() == 0) {
-		return get_cast_shadows();
-	}
 	// That lod relies on the shadow lod
 	if (p_lod_id <= get_minimum_shadow_lod()) {
 		return GeometryInstance3D::SHADOW_CASTING_SETTING_OFF;
