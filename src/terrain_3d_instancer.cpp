@@ -229,15 +229,16 @@ void Terrain3DInstancer::_destroy_mmi_by_cell(const Vector2i &p_region_loc, cons
 	}
 	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
 
-	for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+	// for every region_loc x (mesh_id, every lod) x cell, clear the mmi
+	for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod < Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
 		Vector2i mesh_key(p_mesh_id, lod);
 		if (mesh_mmi_dict.count(mesh_key) == 0) {
-			return;
+			continue;
 		}
-		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
+		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 		if (cell_mmi_dict.count(p_cell) == 0) {
-			return;
+			continue;
 		}
 
 		MultiMeshInstance3D *mmi = cell_mmi_dict[p_cell];
@@ -263,7 +264,6 @@ void Terrain3DInstancer::_destroy_mmi_by_cell(const Vector2i &p_region_loc, cons
 					memdelete_safely(node);
 				}
 			}
-			return; // early exit
 		}
 	}
 }
