@@ -86,7 +86,7 @@ If you use a mesh with multiple materials, make sure they are connected to the M
 
 A MultiMesh renders all instances in one draw call and does not cull individual instances via frustum, occlusion, nor distance.
 
-We mitigate this by generating multiple MultiMeshes, one per region, so that large blocks can be culled by frustum or occlusion. We expose distance culling and split each region into many smaller cells so each multimesh instance can be more finely culled by the engine.
+We mitigate this by generating multiple MultiMeshes. Each region is divided into smaller cells so that these smallers MultiMeshes can be culled by frustum or occlusion. We expose distance culling parameters (visibility ranges) in the asset's settings.
 
 ### No Collision
 
