@@ -257,12 +257,12 @@ void Terrain3DMeshAsset::set_lod_3_visibility_range(const real_t p_distance) {
 }
 
 real_t Terrain3DMeshAsset::get_lod_visibility_range_begin(const int p_lod) const {
-	if (p_lod < 0 || p_lod > get_maximum_lod()) { // TODO: use const
+	if (p_lod < SHADOW_LOD_INSTANCE || p_lod > get_maximum_lod()) { // TODO: use const
 		LOG(ERROR, "Invalid LOD: ", p_lod);
 		return -1.f;
 	}
 
-	if (p_lod == 0) {
+	if (p_lod == 0 || p_lod == SHADOW_LOD_INSTANCE) {
 		return 0.f;
 	}
 
@@ -270,8 +270,12 @@ real_t Terrain3DMeshAsset::get_lod_visibility_range_begin(const int p_lod) const
 }
 
 real_t Terrain3DMeshAsset::get_lod_visibility_range_end(const int p_lod) const {
-	if (p_lod < 0 || p_lod > get_maximum_lod()) {
+	if (p_lod < SHADOW_LOD_INSTANCE || p_lod > get_maximum_lod()) {
 		return -1.f;
+	}
+
+	if (p_lod == SHADOW_LOD_INSTANCE) {
+		return _lod_visibility_ranges[get_maximum_lod()]; // TODO: or config
 	}
 
 	return _lod_visibility_ranges[p_lod];
@@ -382,9 +386,22 @@ void Terrain3DMeshAsset::set_generated_size(const Vector2 &p_size) {
 	}
 }
 
-Ref<Mesh> Terrain3DMeshAsset::get_mesh(const int p_index) {
-	if (p_index >= 0 && p_index < _meshes.size()) {
-		return _meshes[p_index];
+GeometryInstance3D::ShadowCastingSetting Terrain3DMeshAsset::get_lod_cast_shadows(const int p_lod_id) const {
+	if (p_lod_id == SHADOW_LOD_INSTANCE) {
+		return GeometryInstance3D::SHADOW_CASTING_SETTING_SHADOWS_ONLY;
+	}
+	if (p_lod_id <= get_shadow_lod()) {
+		return GeometryInstance3D::SHADOW_CASTING_SETTING_OFF;
+	}
+	return get_cast_shadows();
+}
+
+Ref<Mesh> Terrain3DMeshAsset::get_mesh(const int p_lod_id) {
+	if (p_lod_id == SHADOW_LOD_INSTANCE) {
+		return _meshes[get_shadow_lod()];
+	}
+	if (p_lod_id >= 0 && p_lod_id < _meshes.size()) {
+		return _meshes[p_lod_id];
 	}
 	return Ref<Mesh>();
 }

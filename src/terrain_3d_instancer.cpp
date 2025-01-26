@@ -89,7 +89,7 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 
 				int max_lod = ma->get_maximum_lod();
 
-				for (int lod = 0; lod <= max_lod; lod++) {
+				for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= max_lod; lod++) {
 					Vector2i mesh_key(mesh_id, lod);
 					CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 
@@ -158,8 +158,7 @@ void Terrain3DInstancer::_setup_mmi_lod(MultiMeshInstance3D *p_mmi, const Ref<Te
 	int shadow_lod = p_ma->get_shadow_lod();
 	real_t visibility_margin = p_ma->get_visibility_margin();
 
-	// This will be the entry point to work on shadow lod
-	p_mmi->set_cast_shadows_setting(p_ma->get_cast_shadows());
+	p_mmi->set_cast_shadows_setting(p_ma->get_lod_cast_shadows(p_lod));
 
 	if (visibility_margin > 0.0f) {
 		p_mmi->set_visibility_range_begin_margin(visibility_margin);
@@ -224,7 +223,7 @@ void Terrain3DInstancer::_destroy_mmi_by_cell(const Vector2i &p_region_loc, cons
 	}
 	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
 
-	for (int lod = 0; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+	for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
 		Vector2i mesh_key(p_mesh_id, lod);
 		if (mesh_mmi_dict.count(mesh_key) == 0) {
 			return;
@@ -270,7 +269,7 @@ void Terrain3DInstancer::_destroy_mmi_by_location(const Vector2i &p_region_loc, 
 	}
 	MeshMMIDict &mesh_mmi_dict = _mmi_nodes[p_region_loc];
 
-	for (int lod = 0; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
+	for (int lod = Terrain3DMeshAsset::SHADOW_LOD_INSTANCE; lod <= Terrain3DMeshAsset::MAX_LOD_COUNT; lod++) {
 		Vector2i mesh_key(p_mesh_id, lod);
 		CellMMIDict &cell_mmi_dict = mesh_mmi_dict[mesh_key];
 

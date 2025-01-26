@@ -27,6 +27,7 @@ public:
 	};
 
 	static constexpr int MAX_LOD_COUNT = 4;
+	static constexpr int SHADOW_LOD_INSTANCE = -1; // ID used for the shadow lod in instancer
 
 private:
 	// Saved data
@@ -113,7 +114,8 @@ public:
 	void set_generated_size(const Vector2 &p_size);
 	Vector2 get_generated_size() const { return _generated_size; }
 
-	Ref<Mesh> get_mesh(const int p_index = 0);
+	GeometryInstance3D::ShadowCastingSetting get_lod_cast_shadows(const int p_lod_id) const;
+	Ref<Mesh> get_mesh(const int p_lod_id = 0);
 	int get_mesh_count() const { return _meshes.size(); }
 	void set_mesh_count(const int p_count) {} // no-op, used to expose the property in the editor
 	Ref<Texture2D> get_thumbnail() const { return _thumbnail; }
