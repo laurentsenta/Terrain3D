@@ -158,7 +158,7 @@ void Terrain3DInstancer::_setup_mmi_lod(MultiMeshInstance3D *p_mmi, const Ref<Te
 	p_mmi->set_visibility_range_begin(p_ma->get_lod_visibility_range_begin(p_lod));
 
 	real_t lod_end = p_ma->get_lod_visibility_range_end(p_lod);
-	if (lod_end >= 0.0f) {
+	if (lod_end > 0.0f) {
 		p_mmi->set_visibility_range_end(lod_end);
 	}
 
