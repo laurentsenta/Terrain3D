@@ -399,10 +399,13 @@ GeometryInstance3D::ShadowCastingSetting Terrain3DMeshAsset::get_lod_cast_shadow
 	if (get_cast_shadows() == GeometryInstance3D::SHADOW_CASTING_SETTING_OFF) {
 		return GeometryInstance3D::SHADOW_CASTING_SETTING_OFF;
 	}
-
 	// That lod id is strictly reserved for shadow casting
 	if (p_lod_id == SHADOW_LOD_INSTANCE) {
 		return GeometryInstance3D::SHADOW_CASTING_SETTING_SHADOWS_ONLY;
+	}
+	// We don't have a special case lod for shadows
+	if (get_minimum_shadow_lod() == 0) {
+		return get_cast_shadows();
 	}
 	// That lod relies on the shadow lod
 	if (p_lod_id <= get_minimum_shadow_lod()) {
@@ -416,7 +419,12 @@ GeometryInstance3D::ShadowCastingSetting Terrain3DMeshAsset::get_lod_cast_shadow
 }
 
 Ref<Mesh> Terrain3DMeshAsset::get_mesh(const int p_lod_id) {
+	// Requesting the special case shadow lod
 	if (p_lod_id == SHADOW_LOD_INSTANCE) {
+		// we don't need a shadow lod because we're in the general case
+		if (get_minimum_shadow_lod() == 0) {
+			return nullptr;
+		}
 		return _meshes[get_minimum_shadow_lod()];
 	}
 	if (p_lod_id >= 0 && p_lod_id < _meshes.size()) {
