@@ -111,9 +111,11 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 					if (cell_mmi_dict.count(cell) == 0) {
 						mmi = memnew(MultiMeshInstance3D);
 						LOG(DEBUG, "No MMI found, Created new MultiMeshInstance3D: ", uint64_t(mmi));
-						// Node name is MMI3D_Cell##_##_Mesh#
+						// Node name is MMI3D_Cell##_##_Mesh#_LOD#
 						String cstring = "_C" + Util::location_to_string(cell).trim_prefix("_");
-						mmi->set_name("MMI3D" + cstring + "_M" + String::num_int64(mesh_id));
+						String mstring = "_M" + String::num_int64(mesh_id);
+						String lstring = "_L" + ((lod == Terrain3DMeshAsset::SHADOW_LOD_INSTANCE) ? "S" : String::num_int64(lod));
+						mmi->set_name("MMI3D" + cstring + mstring + lstring);
 						mmi->set_as_top_level(true);
 
 						cell_mmi_dict[cell] = mmi;
