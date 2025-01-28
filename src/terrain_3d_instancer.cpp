@@ -157,17 +157,14 @@ void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_
 }
 
 void Terrain3DInstancer::_setup_mmi_lod(MultiMeshInstance3D *p_mmi, const Ref<Terrain3DMeshAsset> &p_ma, const int p_lod) {
-	p_mmi->set_visibility_range_begin(p_ma->get_lod_visibility_range_begin(p_lod));
+	real_t visibility_margin_crossover = p_ma->get_visibility_margin() / 2.0f;
+
+	real_t lod_begin = MAX(p_ma->get_lod_visibility_range_begin(p_lod) - visibility_margin_crossover, 0.0f);
+	p_mmi->set_visibility_range_begin(lod_begin);
 
 	real_t lod_end = p_ma->get_lod_visibility_range_end(p_lod);
 	if (lod_end > 0.0f) {
-		p_mmi->set_visibility_range_end(lod_end);
-	}
-
-	real_t visibility_margin = p_ma->get_visibility_margin();
-	if (visibility_margin > 0.0f) {
-		p_mmi->set_visibility_range_begin_margin(visibility_margin);
-		p_mmi->set_visibility_range_end_margin(visibility_margin);
+		p_mmi->set_visibility_range_end(lod_end + visibility_margin_crossover);
 	}
 
 	p_mmi->set_cast_shadows_setting(p_ma->get_lod_cast_shadows(p_lod));
