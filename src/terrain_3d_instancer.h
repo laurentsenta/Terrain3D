@@ -76,6 +76,8 @@ public:
 	void swap_ids(const int p_src_id, const int p_dst_id);
 	void force_update_mmis();
 
+	void update_mmis(const Vector2i &p_region_loc = V2I_MAX, const int p_mesh_id = -1);
+
 	void reset_density_counter() { _density_counter = 0; }
 	void dump_data();
 	void dump_mmis();

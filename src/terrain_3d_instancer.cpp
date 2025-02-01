@@ -12,6 +12,10 @@
 // Private Functions
 ///////////////////////////
 
+void Terrain3DInstancer::update_mmis(const Vector2i &p_region_loc, const int p_mesh_id) {
+	_update_mmis(p_region_loc, p_mesh_id);
+}
+
 // Creates MMIs based on stored Multimesh data
 void Terrain3DInstancer::_update_mmis(const Vector2i &p_region_loc, const int p_mesh_id) {
 	IS_DATA_INIT(VOID);
@@ -1119,6 +1123,7 @@ void Terrain3DInstancer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("append_region", "region", "mesh_id", "transforms", "colors", "update"), &Terrain3DInstancer::append_region, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("update_transforms", "aabb"), &Terrain3DInstancer::update_transforms);
 	ClassDB::bind_method(D_METHOD("force_update_mmis"), &Terrain3DInstancer::force_update_mmis);
+	ClassDB::bind_method(D_METHOD("update_mmis"), &Terrain3DInstancer::update_mmis);
 	ClassDB::bind_method(D_METHOD("swap_ids", "src_id", "dest_id"), &Terrain3DInstancer::swap_ids);
 	ClassDB::bind_method(D_METHOD("dump_data"), &Terrain3DInstancer::dump_data);
 	ClassDB::bind_method(D_METHOD("dump_mmis"), &Terrain3DInstancer::dump_mmis);
