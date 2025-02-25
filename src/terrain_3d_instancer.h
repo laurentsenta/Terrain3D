@@ -42,6 +42,7 @@ private:
 	uint32_t _get_density_count(const real_t p_density);
 
 	void _update_mmis(const Vector2i &p_region_loc = V2I_MAX, const int p_mesh_id = -1);
+	void _update_mmis_for_cell(const Ref<Terrain3DRegion> region, const Vector2i &p_region_loc, const Vector2i &p_cell, const Ref<Terrain3DMeshAsset> ma, const int p_mesh_id);
 	void _update_vertex_spacing(const real_t p_vertex_spacing);
 	void _destroy_mmi_by_cell(const Vector2i &p_region_loc, const int p_mesh_id, const Vector2i p_cell);
 	void _destroy_mmi_by_location(const Vector2i &p_region_loc, const int p_mesh_id);
@@ -77,6 +78,7 @@ public:
 	void force_update_mmis();
 
 	void update_mmis(const Vector2i &p_region_loc = V2I_MAX, const int p_mesh_id = -1);
+	void update_cell_mmis(const Vector2i &p_region_loc, const Vector2i &p_cell, const int p_mesh_id);
 
 	void reset_density_counter() { _density_counter = 0; }
 	void dump_data();
